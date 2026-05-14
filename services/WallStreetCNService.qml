@@ -14,6 +14,7 @@ Item {
     readonly property string errorMessage: _errorMessage
     readonly property int totalFetched: _totalFetched
     readonly property string latestTitle: _latestTitle
+    readonly property string latestSummary: _latestSummary
     readonly property int latestId: _latestId
     readonly property int newCount: _newCount
 
@@ -24,6 +25,11 @@ Item {
     property bool notificationsEnabled: true
     property bool importantOnly: false
 
+    // LLM configuration
+    property string llmHost: "localhost"
+    property int llmPort: 11434
+    property string llmModel: "qwen2.5:14b"
+
     onPollIntervalChanged: {
         _pollTimer.interval = pollInterval;
         if (_pollTimer.running) {
@@ -33,11 +39,14 @@ Item {
 
     onImportantOnlyChanged: _refilterModel()
 
+    on_LatestTitleChanged: _summarizeLatest()
+
     // Internal
     property bool _requestInFlight: false
     property string _errorMessage: ""
     property int _totalFetched: 0
     property string _latestTitle: ""
+    property string _latestSummary: ""
     property int _latestId: 0
     property int _newCount: 0
     property var _knownIds: ({})
@@ -226,6 +235,41 @@ Item {
         if (!html) return "";
         return html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&")
             .replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").trim();
+    }
+
+    function _summarizeLatest() {
+        if (_latestTitle.length <= 20) {
+            _latestSummary = _latestTitle;
+            return;
+        }
+        if (!llmHost || !llmModel) {
+            _latestSummary = _latestTitle.substring(0, 20) + "...";
+            return;
+        }
+        var xhr = new XMLHttpRequest();
+        var url = "http://" + llmHost + ":" + llmPort + "/api/chat";
+        var body = JSON.stringify({
+            model: llmModel,
+            messages: [{"role": "user", "content": "请用20个汉字以内总结以下新闻，只输出总结内容，不要有任何多余文字：\n" + _latestTitle}],
+            stream: false
+        });
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== XMLHttpRequest.DONE) return;
+            if (xhr.status === 200) {
+                try {
+                    var json = JSON.parse(xhr.responseText);
+                    _latestSummary = json.message.content.trim();
+                } catch(e) {
+                    _latestSummary = _latestTitle.substring(0, 20) + "...";
+                }
+            } else {
+                _latestSummary = _latestTitle.substring(0, 20) + "...";
+            }
+        };
+        xhr.open("POST", url);
+        xhr.timeout = 30000;
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.send(body);
     }
 
     function formatTime(timestamp) {

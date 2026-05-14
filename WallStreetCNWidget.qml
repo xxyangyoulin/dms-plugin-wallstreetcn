@@ -14,6 +14,7 @@ PluginComponent {
     property int pollInterval: pluginData.pollInterval !== undefined ? pluginData.pollInterval : 60000
 
     readonly property string latestTitle: WallStreetCNService.latestTitle
+    readonly property string latestSummary: WallStreetCNService.latestSummary
     readonly property int newCount: WallStreetCNService.newCount
     readonly property bool isLoading: WallStreetCNService.isLoading
 
@@ -31,6 +32,9 @@ PluginComponent {
     Component.onCompleted: {
         WallStreetCNService.importantOnly = showImportantOnly;
         WallStreetCNService.pollInterval = pollInterval;
+        WallStreetCNService.llmHost = loadValue("llmHost", "localhost");
+        WallStreetCNService.llmPort = loadValue("llmPort", 11434);
+        WallStreetCNService.llmModel = loadValue("llmModel", "qwen2.5:14b");
         WallStreetCNService.init(pluginService, "wallstreetcn");
     }
 
@@ -41,6 +45,15 @@ PluginComponent {
         }
         if (pluginData.pollInterval !== undefined) {
             WallStreetCNService.pollInterval = pluginData.pollInterval;
+        }
+        if (pluginData.llmHost !== undefined) {
+            WallStreetCNService.llmHost = pluginData.llmHost;
+        }
+        if (pluginData.llmPort !== undefined) {
+            WallStreetCNService.llmPort = pluginData.llmPort;
+        }
+        if (pluginData.llmModel !== undefined) {
+            WallStreetCNService.llmModel = pluginData.llmModel;
         }
     }
 
@@ -70,6 +83,7 @@ PluginComponent {
         orientation: Qt.Horizontal
         barThickness: root.barThickness
         latestTitle: root.latestTitle
+        latestSummary: root.latestSummary
         newCount: root.newCount
         isLoading: root.isLoading
     }
@@ -78,6 +92,7 @@ PluginComponent {
         orientation: Qt.Vertical
         barThickness: root.barThickness
         latestTitle: root.latestTitle
+        latestSummary: root.latestSummary
         newCount: root.newCount
         isLoading: root.isLoading
     }

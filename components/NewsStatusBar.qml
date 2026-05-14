@@ -10,6 +10,7 @@ Item {
     property int orientation: Qt.Horizontal
     property real barThickness: 0
     property string latestTitle: ""
+    property string latestSummary: ""
     property int newCount: 0
     property bool isLoading: false
 
@@ -30,9 +31,9 @@ Item {
         }
 
         StyledText {
-            text: root.latestTitle.length > 30
-                ? root.latestTitle.substring(0, 30) + "..."
-                : root.latestTitle
+            text: root.latestTitle.length <= 20 ? root.latestTitle
+                : (root.latestSummary.length > 0 ? root.latestSummary
+                : root.latestTitle.substring(0, 20) + "...")
             font.pixelSize: Theme.barTextSize(root.barThickness)
             color: Theme.widgetTextColor || Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter
