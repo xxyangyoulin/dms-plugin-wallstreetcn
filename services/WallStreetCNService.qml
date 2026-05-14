@@ -247,18 +247,17 @@ Item {
             return;
         }
         var xhr = new XMLHttpRequest();
-        var url = "http://" + llmHost + ":" + llmPort + "/api/chat";
+        var url = "http://" + llmHost + ":" + llmPort + "/v1/chat/completions";
         var body = JSON.stringify({
             model: llmModel,
-            messages: [{"role": "user", "content": "请用20个汉字以内总结以下新闻，只输出总结内容，不要有任何多余文字：\n" + _latestTitle}],
-            stream: false
+            messages: [{"role": "user", "content": "请用20个汉字以内总结以下新闻，只输出总结内容，不要有任何多余文字：\n" + _latestTitle}]
         });
         xhr.onreadystatechange = function() {
             if (xhr.readyState !== XMLHttpRequest.DONE) return;
             if (xhr.status === 200) {
                 try {
                     var json = JSON.parse(xhr.responseText);
-                    _latestSummary = json.message.content.trim();
+                    _latestSummary = json.choices[0].message.content.trim();
                 } catch(e) {
                     _latestSummary = _latestTitle.substring(0, 20) + "...";
                 }
