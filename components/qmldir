@@ -1,0 +1,3 @@
+singleton WallStreetCNService 1.0 ../services/WallStreetCNService.qml
+NewsStatusBar 1.0 NewsStatusBar.qml
+NewsItem 1.0 NewsItem.qml
