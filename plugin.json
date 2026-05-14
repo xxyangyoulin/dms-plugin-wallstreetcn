@@ -3,7 +3,7 @@
     "name": "华尔街见闻",
     "description": "实时追踪华尔街见闻要闻快讯，支持收藏和通知",
     "version": "1.0.0",
-    "author": "yyl",
+    "author": "xxyangyoulin",
     "component": "./WallStreetCNWidget.qml",
     "icon": "newspaper",
     "settings": "./WallStreetCNSettings.qml",
