@@ -145,49 +145,31 @@ Item {
             }
         }
 
-        // Rebuild model with deduplicated sorted items
-        var allItems = [];
-
-        // Add existing model items (apply importance filter)
-        for (var k = 0; k < _newsModel.count; k++) {
-            var existing = _newsModel.get(k);
-            if (importantOnly && (existing.score || 0) < 2) continue;
-            allItems.push({
-                newsId: existing.newsId,
-                title: existing.title,
-                contentText: existing.contentText,
-                displayTime: existing.displayTime,
-                score: existing.score,
-                uri: existing.uri,
-                imageUrl: existing.imageUrl || "",
-                isFavorite: existing.isFavorite
-            });
-        }
-
-        // Merge new items (avoid duplicates)
-        for (var m = 0; m < newItems.length; m++) {
-            var ni = newItems[m];
-            var dup = false;
-            for (var n = 0; n < allItems.length; n++) {
-                if (allItems[n].newsId === ni.id) { dup = true; break; }
-            }
-            if (!dup) {
-                allItems.push(_itemToModel(ni));
-            }
-        }
-
-        // Sort by displayTime descending
-        allItems.sort(function(a, b) { return b.displayTime - a.displayTime; });
-
-        // Filter by cutoff again
+        // Remove expired items from model
         var now2 = Math.floor(Date.now() / 1000);
         var cutoff2 = now2 - (maxDays * 86400);
-        allItems = allItems.filter(function(it) { return it.displayTime >= cutoff2; });
+        for (var k = _newsModel.count - 1; k >= 0; k--) {
+            if (_newsModel.get(k).displayTime < cutoff2) {
+                _newsModel.remove(k);
+            } else if (importantOnly && (_newsModel.get(k).score || 0) < 2) {
+                _newsModel.remove(k);
+            }
+        }
 
-        // Update model
-        _newsModel.clear();
-        for (var p = 0; p < allItems.length; p++) {
-            _newsModel.append(allItems[p]);
+        // Append new items (insert in sorted position)
+        for (var m = 0; m < newItems.length; m++) {
+            var ni = _itemToModel(newItems[m]);
+            var inserted = false;
+            for (var n = 0; n < _newsModel.count; n++) {
+                if (ni.displayTime >= _newsModel.get(n).displayTime) {
+                    _newsModel.insert(n, ni);
+                    inserted = true;
+                    break;
+                }
+            }
+            if (!inserted) {
+                _newsModel.append(ni);
+            }
         }
 
         _totalFetched += newItems.length;
