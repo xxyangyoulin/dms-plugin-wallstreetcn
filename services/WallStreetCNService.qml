@@ -26,8 +26,8 @@ Item {
     property bool importantOnly: false
 
     // LLM configuration
-    property string llmHost: "localhost"
-    property int llmPort: 11434
+    property string llmBaseUrl: "http://localhost:11434/v1"
+    property string llmApiKey: ""
     property string llmModel: "qwen2.5:14b"
 
     onPollIntervalChanged: {
@@ -224,12 +224,12 @@ Item {
             _latestSummary = _latestTitle;
             return;
         }
-        if (!llmHost || !llmModel) {
+        if (!llmBaseUrl || !llmModel) {
             _latestSummary = _latestTitle.substring(0, 20) + "...";
             return;
         }
         var xhr = new XMLHttpRequest();
-        var url = "http://" + llmHost + ":" + llmPort + "/v1/chat/completions";
+        var url = llmBaseUrl.replace(/\/+$/, "") + "/chat/completions";
         var body = JSON.stringify({
             model: llmModel,
             messages: [{"role": "user", "content": "请用20个汉字以内总结以下新闻，只输出总结内容，不要有任何多余文字：\n" + _latestTitle}]
@@ -250,6 +250,9 @@ Item {
         xhr.open("POST", url);
         xhr.timeout = 30000;
         xhr.setRequestHeader("Content-Type", "application/json");
+        if (llmApiKey) {
+            xhr.setRequestHeader("Authorization", "Bearer " + llmApiKey);
+        }
         xhr.send(body);
     }
 

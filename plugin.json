@@ -2,7 +2,7 @@
     "id": "wallstreetcn",
     "name": "华尔街见闻",
     "description": "实时追踪华尔街见闻要闻快讯，支持收藏和通知",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "author": "xxyangyoulin",
     "component": "./WallStreetCNWidget.qml",
     "icon": "newspaper",

@@ -32,8 +32,12 @@ Item {
 
         StyledText {
             text: root.latestTitle.length <= 20 ? root.latestTitle
-                : (root.latestSummary.length > 0 ? root.latestSummary
+                : (root.latestSummary.length > 0 ? root.latestSummary.substring(0, 20) + (root.latestSummary.length > 20 ? "..." : "")
                 : root.latestTitle.substring(0, 20) + "...")
+            width: Math.min(implicitWidth, 240)
+            elide: Text.ElideRight
+            maximumLineCount: 1
+            wrapMode: Text.NoWrap
             font.pixelSize: Theme.barTextSize(root.barThickness)
             color: Theme.widgetTextColor || Theme.surfaceText
             anchors.verticalCenter: parent.verticalCenter

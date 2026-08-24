@@ -32,8 +32,8 @@ PluginComponent {
     Component.onCompleted: {
         WallStreetCNService.importantOnly = showImportantOnly;
         WallStreetCNService.pollInterval = pollInterval;
-        WallStreetCNService.llmHost = loadValue("llmHost", "localhost");
-        WallStreetCNService.llmPort = loadValue("llmPort", 11434);
+        WallStreetCNService.llmBaseUrl = loadValue("llmBaseUrl", "http://localhost:11434/v1");
+        WallStreetCNService.llmApiKey = loadValue("llmApiKey", "");
         WallStreetCNService.llmModel = loadValue("llmModel", "qwen2.5:14b");
         WallStreetCNService.init(pluginService, "wallstreetcn");
     }
@@ -46,27 +46,14 @@ PluginComponent {
         if (pluginData.pollInterval !== undefined) {
             WallStreetCNService.pollInterval = pluginData.pollInterval;
         }
-        if (pluginData.llmHost !== undefined) {
-            WallStreetCNService.llmHost = pluginData.llmHost;
+        if (pluginData.llmBaseUrl !== undefined) {
+            WallStreetCNService.llmBaseUrl = pluginData.llmBaseUrl;
         }
-        if (pluginData.llmPort !== undefined) {
-            WallStreetCNService.llmPort = pluginData.llmPort;
+        if (pluginData.llmApiKey !== undefined) {
+            WallStreetCNService.llmApiKey = pluginData.llmApiKey;
         }
         if (pluginData.llmModel !== undefined) {
             WallStreetCNService.llmModel = pluginData.llmModel;
-        }
-    }
-
-    Connections {
-        target: WallStreetCNService
-        function onNewItemsArrived(items) {
-            if (WallStreetCNService.notificationsEnabled && items.length > 0) {
-                var msg = items.length === 1
-                    ? (items[0].title || items[0].content_text || "新要闻")
-                    : items.length + " 条新要闻";
-                if (msg.length > 80) msg = msg.substring(0, 80) + "...";
-                ToastService.showInfo(msg);
-            }
         }
     }
 

@@ -12,8 +12,8 @@ PluginSettings {
     property string intervalValue: ""
     property bool intervalLoaded: false
 
-    property string llmHostValue: ""
-    property string llmPortValue: ""
+    property string llmBaseUrlValue: ""
+    property string llmApiKeyValue: ""
     property string llmModelValue: ""
     property bool llmLoaded: false
 
@@ -37,8 +37,8 @@ PluginSettings {
     function loadLlmValues() {
         if (!pluginService)
             return;
-        llmHostValue = loadValue("llmHost", "localhost");
-        llmPortValue = loadValue("llmPort", 11434).toString();
+        llmBaseUrlValue = loadValue("llmBaseUrl", "http://localhost:11434/v1");
+        llmApiKeyValue = loadValue("llmApiKey", "");
         llmModelValue = loadValue("llmModel", "qwen2.5:14b");
         llmLoaded = true;
     }
@@ -46,11 +46,8 @@ PluginSettings {
     function persistLlmValues() {
         if (!llmLoaded)
             return;
-        saveValue("llmHost", llmHostValue);
-        var port = parseInt(llmPortValue);
-        if (!isNaN(port) && port > 0 && port <= 65535) {
-            saveValue("llmPort", port);
-        }
+        saveValue("llmBaseUrl", llmBaseUrlValue);
+        saveValue("llmApiKey", llmApiKeyValue);
         if (llmModelValue.length > 0) {
             saveValue("llmModel", llmModelValue);
         }
@@ -98,42 +95,43 @@ PluginSettings {
         spacing: Theme.spacingS
 
         StyledText {
-            text: "状态栏标题超过20字时，使用本地 LLM 自动总结。"
+            text: "状态栏标题超过20字时，调用配置的 OpenAI 兼容接口自动总结。"
             font.pixelSize: Theme.fontSizeSmall
             color: Theme.surfaceVariantText
             width: parent.width
             wrapMode: Text.WordWrap
         }
 
-        Row {
+        Column {
             width: parent.width
             spacing: Theme.spacingS
 
             DankTextField {
-                id: hostField
-                width: parent.width * 0.55
-                placeholderText: "localhost"
-                text: root.llmHostValue
-                onTextEdited: root.llmHostValue = text
+                id: baseUrlField
+                width: parent.width
+                placeholderText: "http://localhost:11434/v1"
+                text: root.llmBaseUrlValue
+                onTextEdited: root.llmBaseUrlValue = text
                 onEditingFinished: root.persistLlmValues()
                 onActiveFocusChanged: {
                     if (!activeFocus) {
-                        root.llmHostValue = text;
+                        root.llmBaseUrlValue = text;
                         root.persistLlmValues();
                     }
                 }
             }
 
             DankTextField {
-                id: portField
-                width: parent.width * 0.4
-                placeholderText: "11434"
-                text: root.llmPortValue
-                onTextEdited: root.llmPortValue = text
+                id: apiKeyField
+                width: parent.width
+                placeholderText: "GLM API Key（本地服务可留空）"
+                echoMode: TextInput.Password
+                text: root.llmApiKeyValue
+                onTextEdited: root.llmApiKeyValue = text
                 onEditingFinished: root.persistLlmValues()
                 onActiveFocusChanged: {
                     if (!activeFocus) {
-                        root.llmPortValue = text;
+                        root.llmApiKeyValue = text;
                         root.persistLlmValues();
                     }
                 }
