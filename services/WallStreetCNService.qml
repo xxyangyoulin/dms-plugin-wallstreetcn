@@ -43,6 +43,7 @@ Item {
 
     // Internal
     property bool _requestInFlight: false
+    property var _activeRequest: null
     property string _errorMessage: ""
     property int _totalFetched: 0
     property string _latestTitle: ""
@@ -79,12 +80,16 @@ Item {
         _errorMessage = "";
 
         var xhr = new XMLHttpRequest();
+        _activeRequest = xhr;
         var limit = 50;
         var url = "https://api-one-wscn.awtmt.com/apiv1/content/lives?channel=" + channel + "&limit=" + limit;
 
         xhr.onreadystatechange = function() {
+            if (_activeRequest !== xhr) return;
             if (xhr.readyState !== XMLHttpRequest.DONE) return;
 
+            _requestTimeout.stop();
+            _activeRequest = null;
             _requestInFlight = false;
 
             if (xhr.status !== 200) {
@@ -108,7 +113,7 @@ Item {
         };
 
         xhr.open("GET", url);
-        xhr.timeout = 15000;
+        _requestTimeout.start();
         xhr.send();
     }
 
@@ -376,6 +381,20 @@ Item {
 
     ListModel {
         id: _favoritesModel
+    }
+
+    Timer {
+        id: _requestTimeout
+        interval: 15000
+        onTriggered: {
+            var xhr = service._activeRequest;
+            // Ignore abort callbacks so they cannot overwrite the timeout error.
+            service._activeRequest = null;
+            xhr.abort();
+            service._requestInFlight = false;
+            service._errorMessage = "请求超时，请重试";
+            service.requestError(service._errorMessage);
+        }
     }
 
     // Poll timer
